@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    image: notes-web:dev
+    ports:
+      - "8080:5000"
+    environment:
+      # Practice-only values for a local stack. Not real credentials.
+      DATABASE_URL: postgresql://notes:practice-only@db:5432/notes
+      REDIS_URL: redis://redis:6379/0
+    networks:
+      - frontend
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: notes
+      POSTGRES_PASSWORD: practice-only
+      POSTGRES_DB: notes
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes -d notes"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - backend
+
+  registry:
+    image: registry:2
+    ports:
+      - "5050:5000"
+
+networks:
+  frontend:
+  backend:
